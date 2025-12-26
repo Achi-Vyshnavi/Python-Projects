@@ -1,68 +1,117 @@
-from tkinter import Tk, Label
+from tkinter import Tk, Label, Button, StringVar
 from tkinter.font import Font
 import time
-
 
 class DigitalClock:
     def __init__(self, font=None):
         """Initialize the digital clock."""
+        self.is_24_hour = True  # Feature: toggle 12/24 hour
+        self.is_dark_mode = True  # Feature: dark/light theme
+        self.quotes = [
+            "Work like hell. – Elon Musk",
+            "When something is important enough, you do it even if the odds are not in your favor. – Elon Musk",
+            "Failure is an option here. – Elon Musk",
+        ]
         self.create_window()
         self.configure_window()
         self.set_font(font)
         self.add_header()
         self.add_clock()
-        self.add_date()  # ✅ Added new method to show date
+        self.add_date()
+        self.add_day()
+        self.add_quote()
+        self.add_buttons()
         self.update_time_on_clock()
 
     def create_window(self):
-        """Create the main window."""
         self.window = Tk()
+        self.window.title("Digital Clock")
+        self.window.geometry("800x500")
 
     def configure_window(self):
-        """Configure the main window properties."""
-        self.window.title('Digital Clock')
-        self.window.config(bg='black')
+        self.update_theme()
 
     def set_font(self, customFont):
-        """Set the font for the clock display."""
-        DEFAULT_FONT = Font(family='Arial', size=90, weight='normal')
-        self.font = customFont if customFont is not None else DEFAULT_FONT
+        DEFAULT_FONT = Font(family='Arial', size=90, weight='bold')
+        self.font = customFont if customFont else DEFAULT_FONT
 
     def add_header(self):
-        """Add a header label to the window."""
-        self.header = Label(self.window, text='Time Clock',
-                            font=self.font, bg='gray', fg='white')
-        self.header.grid(row=1, column=2)
+        self.header = Label(self.window, text="Time Clock", font=('Arial', 30, 'bold'))
+        self.header.pack(pady=10)
 
     def add_clock(self):
-        """Add the clock label to the window."""
-        self.clock = Label(self.window, font=(
-            'times', 90, 'bold'), bg='blue', fg='white')
-        self.clock.grid(row=2, column=2, padx=620, pady=250)
+        self.clock = Label(self.window, font=self.font, bg='black', fg='white')
+        self.clock.pack(pady=20)
 
     def add_date(self):
-        """Add a date label below the clock."""
-        self.date_label = Label(self.window, font=('times', 40, 'bold'), bg='black', fg='white')
-        self.date_label.grid(row=3, column=2)
+        self.date_label = Label(self.window, font=('Arial', 25, 'bold'))
+        self.date_label.pack()
         self.update_date_on_clock()
 
+    def add_day(self):
+        self.day_label = Label(self.window, font=('Arial', 20, 'bold'))
+        self.day_label.pack()
+        self.update_day_on_clock()
+
+    def add_quote(self):
+        self.quote_var = StringVar()
+        self.quote_var.set(self.quotes[0])
+        self.quote_label = Label(self.window, textvariable=self.quote_var, font=('Arial', 15, 'italic'))
+        self.quote_label.pack(pady=10)
+        self.update_quote()
+
+    def add_buttons(self):
+        # Toggle 12/24 hour
+        self.toggle_hour_btn = Button(self.window, text="Toggle 12/24 Hour", command=self.toggle_hour_format)
+        self.toggle_hour_btn.pack(pady=5)
+        # Toggle light/dark mode
+        self.toggle_theme_btn = Button(self.window, text="Toggle Theme", command=self.toggle_theme)
+        self.toggle_theme_btn.pack(pady=5)
+
+    def toggle_hour_format(self):
+        self.is_24_hour = not self.is_24_hour
+
+    def toggle_theme(self):
+        self.is_dark_mode = not self.is_dark_mode
+        self.update_theme()
+
+    def update_theme(self):
+        if self.is_dark_mode:
+            bg, fg = 'black', 'white'
+        else:
+            bg, fg = 'white', 'black'
+        self.window.config(bg=bg)
+        self.clock.config(bg=bg, fg=fg)
+        self.date_label.config(bg=bg, fg=fg)
+        self.day_label.config(bg=bg, fg=fg)
+        self.header.config(bg=bg, fg=fg)
+        self.quote_label.config(bg=bg, fg=fg)
+
+    def update_quote(self):
+        import random
+        self.quote_var.set(random.choice(self.quotes))
+        self.quote_label.after(10000, self.update_quote)  # change quote every 10 seconds
+
     def update_date_on_clock(self):
-        """Update the date displayed below the clock."""
         currentDate = time.strftime("%d-%b-%Y")
         self.date_label.config(text=currentDate)
-        # Update every midnight (24*60*60*1000 ms)
-        self.date_label.after(86400000, self.update_date_on_clock)
+        self.date_label.after(86400000, self.update_date_on_clock)  # update daily
+
+    def update_day_on_clock(self):
+        day = time.strftime("%A")
+        self.day_label.config(text=day)
+        self.day_label.after(86400000, self.update_day_on_clock)  # update daily
 
     def update_time_on_clock(self):
-        """Update the time displayed on the clock every second."""
-        currentTime = time.strftime("%H:%M:%S")
+        if self.is_24_hour:
+            currentTime = time.strftime("%H:%M:%S")
+        else:
+            currentTime = time.strftime("%I:%M:%S %p")
         self.clock.config(text=currentTime)
         self.clock.after(1000, self.update_time_on_clock)
 
     def start(self):
-        """Start the Tkinter main loop."""
         self.window.mainloop()
-
 
 if __name__ == "__main__":
     clock = DigitalClock()

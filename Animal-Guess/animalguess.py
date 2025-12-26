@@ -16,7 +16,7 @@ def check_guess(guess, answer):
             attempt += 1
             if attempt < 3:
                 guess = input("❌ Wrong answer. Try again: ").strip()
-    print("The correct answer is:", answer)
+    print("The correct answer is:", answer) 
     return 0
 
 def main():
